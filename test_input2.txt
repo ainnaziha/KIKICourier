@@ -4,3 +4,23 @@ PKG2 75 125 OFR0008
 PKG3 175 100 OFR003
 PKG4 110 60 OFR002
 PKG5 155 95 NA
+2 70 200
+
+PKG1 0 750 3.98
+PKG2 0 1475 1.78
+PKG3 0 2350 1.42
+PKG4 105 1395 0.85
+PKG5 0 2125 4.19
+
+Shipment 1 (Vehicle 1): PKG2+PKG4
+PKG4: 0 + 60/70 = 0.857 → 0.85
+PKG2: 0 + 125/70 = 1.786 → 1.78
+Vehicle returns: 0 + (2×125)/70 = 3.571
+Shipment 2 (Vehicle 2): PKG3
+PKG3: 0 + 100/70 = 1.429 → 1.42
+Vehicle returns: 0 + (2×100)/70 = 2.857
+Shipment 3 (Vehicle 2): PKG5
+PKG5: 2.857 + 95/70 = 4.214 → 4.21
+Vehicle returns: 5.571
+Shipment 4 (Vehicle 1): PKG1
+PKG1: 3.571 + 30/70 = 4.000 → 4.0

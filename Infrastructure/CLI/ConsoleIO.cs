@@ -155,13 +155,17 @@ public class ConsoleIO
     {
         foreach (var result in results)
         {
+            var discount = Math.Round(result.Discount, 0);
+            var totalCost = Math.Round(result.TotalCost, 0);
+
             if (includeTime && result.EstimatedDeliveryTimeHours.HasValue)
             {
-                Console.WriteLine($"{result.PackageId} {result.Discount} {result.TotalCost} {result.EstimatedDeliveryTimeHours.Value:F2}");
+                var deliveryTime = Math.Floor(result.EstimatedDeliveryTimeHours.Value * 100) / 100;
+                Console.WriteLine($"{result.PackageId} {discount} {totalCost} {deliveryTime:F2}");
             }
             else
             {
-                Console.WriteLine($"{result.PackageId} {result.Discount} {result.TotalCost}");
+                Console.WriteLine($"{result.PackageId} {discount} {totalCost}");
             }
         }
     }

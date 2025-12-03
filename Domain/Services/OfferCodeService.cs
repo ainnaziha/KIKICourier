@@ -40,6 +40,7 @@ public class ShipmentOptimizer : IShipmentOptimizer
             .OrderByDescending(s => s.Packages.Count)
             .ThenByDescending(s => s.TotalWeight)
             .ThenBy(s => s.MaxDistance)
+            .ThenBy(s => string.Join(",", s.Packages.Select(p => p.Id).OrderBy(id => id)))
             .First();
     }
 
