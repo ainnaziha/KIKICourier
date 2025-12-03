@@ -1,16 +1,22 @@
 ﻿using KIKICourier.Application;
+using KIKICourier.Domain.Repositories;
 using KIKICourier.Domain.Services;
 using KIKICourier.Infrastructure.CLI;
+using KIKICourier.Infrastructure.Repositories;
 
 class Program
 {
     static void Main()
     {
-        var calculator = new DeliveryCost();
+        IOfferRepository offerRepository = new InMemoryOfferRepository();
 
-        IOfferCodeService offerCodeService = new OfferCodeService();
+        IDeliveryCostCalculator costCalculator = new DeliveryCostCalculator(offerRepository);
 
-        IDeliveryService deliveryService = new DeliveryService(calculator, offerCodeService);
+        IShipmentOptimizer shipmentOptimizer = new ShipmentOptimizer();
+
+        IDeliveryTimeEstimator timeEstimator = new DeliveryTimeEstimator(shipmentOptimizer);
+
+        IDeliveryService deliveryService = new DeliveryService(costCalculator, timeEstimator);
 
         var consoleApp = new ConsoleIO(deliveryService);
 

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using KIKICourier.Domain.Entities;
 
-namespace KIKICourier.Domain.Services
+namespace KIKICourier.Domain.Services;
+
+public interface IShipmentOptimizer
 {
-    public interface IOfferCodeService
-    {
-        double GetDiscount(double distanceKm, double weightKg);
-    }
-
+    List<Shipment> OptimizeShipments(List<Package> packages, double maxCarriableWeight);
 }

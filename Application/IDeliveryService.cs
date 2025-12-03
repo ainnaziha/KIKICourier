@@ -1,14 +1,17 @@
 ﻿using KIKICourier.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace KIKICourier.Application
+namespace KIKICourier.Application;
+
+public interface IDeliveryService
 {
-    public interface IDeliveryService
-    {
-        double ComputeDeliveryCost(double distanceKm, double weightKg, bool applyOffer);
-    }
+    List<DeliveryCostResult> ProcessDeliveryEstimation(
+        double baseDeliveryCost,
+        List<Package> packages);
 
-
+    List<DeliveryCostResult> ProcessDeliveryWithTimeEstimation(
+        double baseDeliveryCost,
+        List<Package> packages,
+        int numberOfVehicles,
+        double maxSpeedKmPerHour,
+        double maxCarriableWeightKg);
 }

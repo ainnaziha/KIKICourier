@@ -1,91 +1,115 @@
 ﻿using KIKICourier.Application;
 using KIKICourier.Domain.Entities;
 
-namespace KIKICourier.Infrastructure.CLI
+namespace KIKICourier.Infrastructure.CLI;
+
+public class ConsoleIO
 {
-    public class ConsoleIO
+    private readonly IDeliveryService _deliveryService;
+
+    public ConsoleIO(IDeliveryService deliveryService)
     {
-        private readonly IDeliveryService _deliveryService;
+        _deliveryService = deliveryService ?? throw new ArgumentNullException(nameof(deliveryService));
+    }
 
-        public ConsoleIO(IDeliveryService deliveryService)
+    public void Run()
+    {
+        try
         {
-            _deliveryService = deliveryService;
-        }
+            var (baseDeliveryCost, packages) = ReadInput();
 
-        public void Run()
-        {
-            while (true)
+            Console.WriteLine("\nDo you want to estimate delivery time? (y/n)");
+            var estimateTime = Console.ReadLine()?.Trim().ToLower() == "y";
+
+            List<DeliveryCostResult> results;
+
+            if (estimateTime)
             {
-                Console.Clear();
-                Console.WriteLine("=== KIKI Courier At Your Service ^_^ ===");
-                Console.WriteLine("1. Calculate Delivery Cost");
-                Console.WriteLine("2. Exit");
-                Console.Write("Choose an option: ");
-
-                string? choice = Console.ReadLine();
-
-                switch (choice)
-                {
-                    case "1":
-                        CalculateDeliveryCost();
-                        break;
-
-                    case "2":
-                        Console.WriteLine("Goodbye!");
-                        return;
-
-                    default:
-                        Console.WriteLine("Invalid option. Press any key to try again...");
-                        Console.ReadKey();
-                        break;
-                }
+                var (numberOfVehicles, maxSpeed, maxWeight) = ReadVehicleInput();
+                results = _deliveryService.ProcessDeliveryWithTimeEstimation(
+                    baseDeliveryCost,
+                    packages,
+                    numberOfVehicles,
+                    maxSpeed,
+                    maxWeight);
             }
-        }
-
-        private void CalculateDeliveryCost()
-        {
-            Console.Clear();
-            Console.WriteLine("=== Delivery Cost Estimation with Offers ===");
-
-            double distance = ReadDouble("Enter distance (km): ");
-            double weight = ReadDouble("Enter weight (kg): ");
-
-            bool applyOffer = AskYesNo("Apply offer? (y/n): ");
-
-            double cost = _deliveryService.ComputeDeliveryCost(distance, weight, applyOffer);
-
-            Console.WriteLine($"\nTotal Delivery Cost: RM {cost:F2}");
-
-            Console.WriteLine("\nPress any key to return to menu...");
-            Console.ReadKey();
-        }
-        private bool AskYesNo(string label)
-        {
-            while (true)
+            else
             {
-                Console.Write(label);
-                string? input = Console.ReadLine()?.Trim().ToLower();
-
-                if (input == "y") return true;
-                if (input == "n") return false;
-
-                Console.WriteLine("Please enter y or n.");
+                results = _deliveryService.ProcessDeliveryEstimation(baseDeliveryCost, packages);
             }
+
+            DisplayResults(results, estimateTime);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private static (double baseDeliveryCost, List<Package> packages) ReadInput()
+    {
+        var firstLine = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(firstLine))
+            throw new InvalidOperationException("Input cannot be empty");
+
+        var parts = firstLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2)
+            throw new InvalidOperationException("First line must contain: base_delivery_cost no_of_packages");
+
+        double baseDeliveryCost = double.Parse(parts[0]);
+        int numberOfPackages = int.Parse(parts[1]);
+
+        var packages = new List<Package>();
+
+        for (int i = 0; i < numberOfPackages; i++)
+        {
+            var packageLine = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(packageLine))
+                throw new InvalidOperationException($"Package line {i + 1} cannot be empty");
+
+            var packageParts = packageLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (packageParts.Length != 4)
+                throw new InvalidOperationException($"Package line must contain: pkg_id weight distance offer_code");
+
+            string packageId = packageParts[0];
+            double weight = double.Parse(packageParts[1]);
+            double distance = double.Parse(packageParts[2]);
+            string? offerCode = packageParts[3];
+
+            packages.Add(new Package(packageId, weight, distance, offerCode));
         }
 
-        private double ReadDouble(string label)
+        return (baseDeliveryCost, packages);
+    }
+
+    private static (int numberOfVehicles, double maxSpeed, double maxWeight) ReadVehicleInput()
+    {
+        var vehicleLine = Console.ReadLine();
+        if (string.IsNullOrWhiteSpace(vehicleLine))
+            throw new InvalidOperationException("Vehicle line cannot be empty");
+
+        var parts = vehicleLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 3)
+            throw new InvalidOperationException("Vehicle line must contain: no_of_vehicles max_speed max_carriable_weight");
+
+        int numberOfVehicles = int.Parse(parts[0]);
+        double maxSpeed = double.Parse(parts[1]);
+        double maxWeight = double.Parse(parts[2]);
+
+        return (numberOfVehicles, maxSpeed, maxWeight);
+    }
+
+    private static void DisplayResults(List<DeliveryCostResult> results, bool includeTime)
+    {
+        foreach (var result in results)
         {
-            while (true)
+            if (includeTime && result.EstimatedDeliveryTimeHours.HasValue)
             {
-                Console.Write(label);
-                string? input = Console.ReadLine();
-
-                if (double.TryParse(input, out double value) && value > 0)
-                {
-                    return value;
-                }
-
-                Console.WriteLine("Invalid input, please enter a valid positive number.");
+                Console.WriteLine($"{result.PackageId} {result.Discount} {result.TotalCost} {result.EstimatedDeliveryTimeHours.Value:F2}");
+            }
+            else
+            {
+                Console.WriteLine($"{result.PackageId} {result.Discount} {result.TotalCost}");
             }
         }
     }
