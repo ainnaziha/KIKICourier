@@ -45,17 +45,22 @@ public class DeliveryTimeEstimator : IDeliveryTimeEstimator
 
             // Console.WriteLine($"[DEBUG] Vehicle {availableVehicle.Id} (avail: {availableVehicle.AvailableAtHours:F3}) taking: {string.Join(", ", shipment.Packages.Select(p => p.Id))}");
 
+            var maxDeliveryTime = 0.0;
             foreach (var package in shipment.Packages)
             {
                 var packageTravelTime = package.DistanceKm / availableVehicle.MaxSpeedKmPerHour;
-                deliveryTimes[package.Id] = availableVehicle.AvailableAtHours + packageTravelTime;
-                // Console.WriteLine($"[DEBUG]   {package.Id}: {availableVehicle.AvailableAtHours:F3} + {packageTravelTime:F3} = {deliveryTimes[package.Id]:F3}");
+                var deliveryTime = availableVehicle.AvailableAtHours + packageTravelTime;
+                deliveryTimes[package.Id] = deliveryTime;
+
+                var truncatedDeliveryTime = Math.Floor(deliveryTime * 100) / 100;
+                if (truncatedDeliveryTime > maxDeliveryTime)
+                    maxDeliveryTime = truncatedDeliveryTime;
+
+                // Console.WriteLine($"[DEBUG]   {package.Id}: {availableVehicle.AvailableAtHours:F3} + {packageTravelTime:F3} = {deliveryTime:F3} (truncated: {truncatedDeliveryTime:F3})");
                 remainingPackages.Remove(package);
             }
 
-            var maxDistance = shipment.MaxDistance;
-            var roundTripTime = (2 * maxDistance) / availableVehicle.MaxSpeedKmPerHour;
-            availableVehicle.AvailableAtHours += roundTripTime;
+            availableVehicle.AvailableAtHours = 2 * maxDeliveryTime;
             // Console.WriteLine($"[DEBUG]   Vehicle {availableVehicle.Id} returns at: {availableVehicle.AvailableAtHours:F3}");
         }
 
