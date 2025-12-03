@@ -16,9 +16,11 @@ public class ConsoleIO
     {
         try
         {
+            Console.WriteLine("=== KIKI Courier Delivery Service ===\n");
+
             var (baseDeliveryCost, packages) = ReadInput();
 
-            Console.WriteLine("\nDo you want to estimate delivery time? (y/n)");
+            Console.Write("\nDo you want to estimate delivery time? (y/n): ");
             var estimateTime = Console.ReadLine()?.Trim().ToLower() == "y";
 
             List<DeliveryCostResult> results;
@@ -38,16 +40,18 @@ public class ConsoleIO
                 results = _deliveryService.ProcessDeliveryEstimation(baseDeliveryCost, packages);
             }
 
+            Console.WriteLine("\n=== Results ===");
             DisplayResults(results, estimateTime);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"\nError: {ex.Message}");
         }
     }
 
     private static (double baseDeliveryCost, List<Package> packages) ReadInput()
     {
+        Console.Write("Enter base delivery cost and number of packages (e.g., 100 3): ");
         var firstLine = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(firstLine))
             throw new InvalidOperationException("Input cannot be empty");
@@ -61,8 +65,10 @@ public class ConsoleIO
 
         var packages = new List<Package>();
 
+        Console.WriteLine("\nEnter package details (format: pkg_id weight distance offer_code):");
         for (int i = 0; i < numberOfPackages; i++)
         {
+            Console.Write($"Package {i + 1}: ");
             var packageLine = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(packageLine))
                 throw new InvalidOperationException($"Package line {i + 1} cannot be empty");
@@ -84,6 +90,7 @@ public class ConsoleIO
 
     private static (int numberOfVehicles, double maxSpeed, double maxWeight) ReadVehicleInput()
     {
+        Console.Write("\nEnter vehicle details (format: no_of_vehicles max_speed max_weight): ");
         var vehicleLine = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(vehicleLine))
             throw new InvalidOperationException("Vehicle line cannot be empty");
