@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using KIKICourier.Domain.Entities;
 
-namespace KIKICourier.Domain.Services
+namespace KIKICourier.Domain.Services;
+
+public interface IDeliveryCostCalculator
 {
-    namespace Domain.Services
-    {
-        public interface IDeliveryCost
-        {
-            double Calculate(double distanceKm, double weightKg);
-        }
-    }
+    double CalculateBaseCost(double baseDeliveryCost, Package package);
+    double CalculateDiscount(Package package, double deliveryCost);
+    DeliveryCostResult CalculateWithDiscount(double baseDeliveryCost, Package package);
 }

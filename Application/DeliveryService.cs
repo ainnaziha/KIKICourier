@@ -1,31 +1,72 @@
-﻿using KIKICourier.Domain.Services;
-using KIKICourier.Domain.Services.Domain.Services;
+﻿using KIKICourier.Domain.Entities;
+using KIKICourier.Domain.Services;
 
-namespace KIKICourier.Application
+namespace KIKICourier.Application;
+
+public class DeliveryService : IDeliveryService
 {
-    public class DeliveryService : IDeliveryService
+    private readonly IDeliveryCostCalculator _costCalculator;
+    private readonly IDeliveryTimeEstimator _timeEstimator;
+
+    public DeliveryService(
+        IDeliveryCostCalculator costCalculator,
+        IDeliveryTimeEstimator timeEstimator)
     {
-        private readonly IDeliveryCost _deliveryCost;
-        private readonly IOfferCodeService _offerService;
+        _costCalculator = costCalculator ?? throw new ArgumentNullException(nameof(costCalculator));
+        _timeEstimator = timeEstimator ?? throw new ArgumentNullException(nameof(timeEstimator));
+    }
 
-        public DeliveryService(
-            IDeliveryCost deliveryCost,
-            IOfferCodeService offerService)
+    public List<DeliveryCostResult> ProcessDeliveryEstimation(
+        double baseDeliveryCost,
+        List<Package> packages)
+    {
+        if (packages == null || packages.Count == 0)
+            throw new ArgumentException("Packages list cannot be empty", nameof(packages));
+
+        var results = new List<DeliveryCostResult>();
+
+        foreach (var package in packages)
         {
-            _deliveryCost = deliveryCost;
-            _offerService = offerService;
+            var result = _costCalculator.CalculateWithDiscount(baseDeliveryCost, package);
+            results.Add(result);
         }
 
-        public double ComputeDeliveryCost(double distanceKm, double weightKg, bool applyOffer)
+        return results;
+    }
+
+    public List<DeliveryCostResult> ProcessDeliveryWithTimeEstimation(
+        double baseDeliveryCost,
+        List<Package> packages,
+        int numberOfVehicles,
+        double maxSpeedKmPerHour,
+        double maxCarriableWeightKg)
+    {
+        if (packages == null || packages.Count == 0)
+            throw new ArgumentException("Packages list cannot be empty", nameof(packages));
+        if (numberOfVehicles <= 0)
+            throw new ArgumentException("Number of vehicles must be positive", nameof(numberOfVehicles));
+
+        var results = ProcessDeliveryEstimation(baseDeliveryCost, packages);
+
+        var vehicles = new List<Vehicle>();
+        for (int i = 1; i <= numberOfVehicles; i++)
         {
-            double baseCost = _deliveryCost.Calculate(distanceKm, weightKg);
-
-            if (!applyOffer)
-                return baseCost;
-
-            double discount = _offerService.GetDiscount(distanceKm, weightKg);
-
-            return baseCost - (baseCost * discount);
+            vehicles.Add(new Vehicle(i, maxSpeedKmPerHour, maxCarriableWeightKg));
         }
+
+        var deliveryTimes = _timeEstimator.EstimateDeliveryTimes(
+            packages,
+            vehicles,
+            maxCarriableWeightKg);
+
+        foreach (var result in results)
+        {
+            if (deliveryTimes.TryGetValue(result.PackageId, out double deliveryTime))
+            {
+                result.EstimatedDeliveryTimeHours = deliveryTime;
+            }
+        }
+
+        return results;
     }
 }

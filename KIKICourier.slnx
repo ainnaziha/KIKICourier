@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="KIKICourier.csproj" />
+  <Project Path="KIKICourier.Tests/KIKICourier.Tests.csproj" />
 </Solution>

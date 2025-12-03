@@ -1,0 +1,37 @@
+100 3
+PKG1 5 5 OFR001
+PKG2 15 5 OFR002
+PKG3 10 100 OFR003
+
+PKG1 0 175
+PKG2 0 275
+PKG3 35 665
+
+=== Calculation Details ===
+
+PKG1: 5 kg, 5 km, OFR001
+- Base cost: 100
+- Weight cost: 5 × 10 = 50
+- Distance cost: 5 × 5 = 25
+- Total before discount: 100 + 50 + 25 = 175
+- OFR001 (10%, 0-200km, 70-200kg): NOT applicable (weight 5kg < 70kg)
+- Discount: 0
+- Final cost: 175
+
+PKG2: 15 kg, 5 km, OFR002
+- Base cost: 100
+- Weight cost: 15 × 10 = 150
+- Distance cost: 5 × 5 = 25
+- Total before discount: 100 + 150 + 25 = 275
+- OFR002 (7%, 50-150km, 100-250kg): NOT applicable (distance 5km < 50km)
+- Discount: 0
+- Final cost: 275
+
+PKG3: 10 kg, 100 km, OFR003
+- Base cost: 100
+- Weight cost: 10 × 10 = 100
+- Distance cost: 100 × 5 = 500
+- Total before discount: 100 + 100 + 500 = 700
+- OFR003 (5%, 50-250km, 10-150kg): APPLICABLE (100km ✓, 10kg ✓)
+- Discount: 700 × 0.05 = 35
+- Final cost: 700 - 35 = 665
