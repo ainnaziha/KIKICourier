@@ -31,8 +31,6 @@ Package 1: PKG1 5 5 OFR001
 Package 2: PKG2 15 5 OFR002
 Package 3: PKG3 10 100 OFR003
 
-Do you want to estimate delivery time? (y/n): n
-
 Results:
 PKG1 0 175
 PKG2 0 275

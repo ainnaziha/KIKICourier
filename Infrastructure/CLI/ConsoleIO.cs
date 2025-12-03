@@ -14,39 +14,84 @@ public class ConsoleIO
 
     public void Run()
     {
-        try
+        while (true)
         {
-            Console.WriteLine("=== KIKI Courier Delivery Service ===\n");
-
-            var (baseDeliveryCost, packages) = ReadInput();
-
-            Console.Write("\nDo you want to estimate delivery time? (y/n): ");
-            var estimateTime = Console.ReadLine()?.Trim().ToLower() == "y";
-
-            List<DeliveryCostResult> results;
-
-            if (estimateTime)
+            try
             {
-                var (numberOfVehicles, maxSpeed, maxWeight) = ReadVehicleInput();
-                results = _deliveryService.ProcessDeliveryWithTimeEstimation(
-                    baseDeliveryCost,
-                    packages,
-                    numberOfVehicles,
-                    maxSpeed,
-                    maxWeight);
-            }
-            else
-            {
-                results = _deliveryService.ProcessDeliveryEstimation(baseDeliveryCost, packages);
-            }
+                Console.Clear();
+                Console.WriteLine("=== KIKI Courier At Your Service ^_^ ===");
+                Console.WriteLine("1. Delivery Cost Estimation with Offers");
+                Console.WriteLine("2. Delivery Time Estimation");
+                Console.WriteLine("3. Exit");
+                Console.Write("\nChoose an option: ");
 
-            Console.WriteLine("\n=== Results ===");
-            DisplayResults(results, estimateTime);
+                string? choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        EstimateCost();
+                        break;
+
+                    case "2":
+                        EstimateTime();
+                        break;
+
+                    case "3":
+                        Console.WriteLine("Goodbye!");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid option. Press any key to try again...");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nError: {ex.Message}");
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"\nError: {ex.Message}");
-        }
+    }
+
+    private void EstimateCost()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Estimate Delivery Cost ===\n");
+
+        var (baseDeliveryCost, packages) = ReadInput();
+
+        var results = _deliveryService.ProcessDeliveryEstimation(baseDeliveryCost, packages);
+
+        Console.WriteLine("\n=== Results ===");
+        DisplayResults(results, false);
+
+        Console.WriteLine("\nPress any key to return to menu...");
+        Console.ReadKey();
+    }
+
+    private void EstimateTime()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Estimate Delivery Time ===\n");
+
+        var (baseDeliveryCost, packages) = ReadInput();
+        var (numberOfVehicles, maxSpeed, maxWeight) = ReadVehicleInput();
+
+        var results = _deliveryService.ProcessDeliveryWithTimeEstimation(
+            baseDeliveryCost,
+            packages,
+            numberOfVehicles,
+            maxSpeed,
+            maxWeight);
+
+        Console.WriteLine("\n=== Results ===");
+        DisplayResults(results, true);
+
+        Console.WriteLine("\nPress any key to return to menu...");
+        Console.ReadKey();
     }
 
     private static (double baseDeliveryCost, List<Package> packages) ReadInput()
